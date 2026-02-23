@@ -1,12 +1,7 @@
 {
-    "functions": {
-        "api/index.js": {
-            "includeFiles": "page.html"
-        }
-    },
     "rewrites": [
         {
-            "source": "/",
+            "source": "/((?!page\\.html|swiper\\.esm\\.js|images/.*).*)",
             "destination": "/api/index"
         }
     ]
