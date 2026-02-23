@@ -1,7 +1,7 @@
 {
     "rewrites": [
         {
-            "source": "/((?!page\\.html|swiper\\.esm\\.js|images/.*).*)",
+            "source": "/",
             "destination": "/api/index"
         }
     ]
