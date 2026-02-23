@@ -19,7 +19,6 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="./swiper.esm.js"></script>
     <style>
         :root {
             --bg-dark: #020203;
@@ -43,7 +42,6 @@
             overflow-x: hidden;
         }
 
-        /* ===== LOADING OVERLAY ===== */
         .loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-dark); z-index: 9999;
@@ -65,7 +63,6 @@
         .loader-dots::after { content: ''; animation: dots 1.5s steps(4,end) infinite; }
         @keyframes dots { 0%{content:''} 25%{content:'.'} 50%{content:'..'} 75%{content:'...'} }
 
-        /* ===== NO CA PAGE ===== */
         .no-ca-page {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-dark); z-index: 9998;
@@ -84,7 +81,6 @@
             border: 1px solid rgba(34,197,94,0.15);
         }
 
-        /* ===== CANVAS + BG ===== */
         #particleCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
         .orb { position: fixed; border-radius: 50%; filter: blur(100px); z-index: 0; pointer-events: none; }
         .orb-1 { width: 500px; height: 500px; background: rgba(34,197,94,0.07); top: -10%; left: 10%; animation: floatOrb1 25s ease-in-out infinite; }
@@ -102,7 +98,6 @@
 
         .main-wrapper { width: 100%; max-width: 1050px; position: relative; z-index: 1; }
 
-        /* ===== VOTE CARD ===== */
         .vote-card {
             background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 28px;
             overflow: hidden; box-shadow: 0 40px 120px rgba(0,0,0,1); backdrop-filter: blur(30px); margin-bottom: 30px;
@@ -126,15 +121,10 @@
 
         .card-grid { display: grid; grid-template-columns: 1.3fr 0.7fr; padding: 40px; gap: 50px; }
 
-        /* ===== LOGO ROW (logo + mobile vote btn) ===== */
         .logo-row {
-            display: flex;
-            align-items: flex-start;
-            gap: 20px;
-            margin-bottom: 20px;
+            display: flex; align-items: flex-start; gap: 20px; margin-bottom: 20px;
         }
 
-        /* ===== LARGE LOGO ===== */
         .token-img-box {
             width: 200px; height: 200px;
             background: linear-gradient(145deg, #111, #0a0a0a);
@@ -143,8 +133,7 @@
             display: flex; align-items: center; justify-content: center;
             box-shadow: 0 0 60px rgba(0,0,0,0.7), 0 0 100px rgba(34,197,94,0.08);
             position: relative; overflow: hidden;
-            animation: logoFloat 5s ease-in-out infinite;
-            flex-shrink: 0;
+            animation: logoFloat 5s ease-in-out infinite; flex-shrink: 0;
         }
         .token-img-box::before {
             content: ''; position: absolute; inset: -4px; border-radius: 36px;
@@ -167,77 +156,43 @@
             position: relative; z-index: 1;
         }
 
-        /* ===== MOBILE VOTE BUTTON (beside logo) ===== */
+        /* MOBILE VOTE AREA */
         .mobile-vote-area {
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: stretch;
-            flex: 1;
-            gap: 12px;
+            display: none; flex-direction: column; justify-content: center;
+            align-items: stretch; flex: 1; gap: 12px;
         }
         .mobile-vote-label {
-            font-size: 0.7rem;
-            color: var(--text-dim);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-align: center;
+            font-size: 0.7rem; color: var(--text-dim); font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px; text-align: center;
         }
         .btn-vote-mobile {
-            width: 100%;
-            padding: 18px 20px;
-            border-radius: 16px;
-            border: none;
-            background: var(--dex-green);
-            color: black;
-            font-weight: 800;
-            font-size: 1rem;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
+            width: 100%; padding: 18px 20px; border-radius: 16px; border: none;
+            background: var(--dex-green); color: black; font-weight: 800; font-size: 1rem;
+            cursor: pointer; position: relative; overflow: hidden;
             transition: all 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
         .btn-vote-mobile::after {
             content: ''; position: absolute; top: -50%; left: -60%; width: 200%; height: 200%;
             background: linear-gradient(transparent, rgba(255,255,255,0.15), transparent);
             transform: rotate(30deg); animation: btnShine 4s ease-in-out infinite;
         }
-        .btn-vote-mobile:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px var(--dex-green-glow);
-            filter: brightness(1.1);
-        }
-        .mobile-vote-stats {
-            display: flex; gap: 8px; justify-content: center;
-        }
+        .btn-vote-mobile:hover { transform: translateY(-2px); box-shadow: 0 10px 30px var(--dex-green-glow); filter: brightness(1.1); }
+        .btn-vote-mobile:active { transform: scale(0.97); }
+        .mobile-vote-stats { display: flex; gap: 8px; justify-content: center; }
         .mv-stat {
-            background: rgba(34,197,94,0.06);
-            border: 1px solid rgba(34,197,94,0.12);
-            border-radius: 10px;
-            padding: 8px 12px;
-            text-align: center;
-            flex: 1;
+            background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.12);
+            border-radius: 10px; padding: 8px 12px; text-align: center; flex: 1;
         }
         .mv-stat-val {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.82rem;
-            font-weight: 700;
-            color: var(--dex-green);
+            font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+            font-weight: 700; color: var(--dex-green);
         }
         .mv-stat-label {
-            font-size: 0.55rem;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            margin-top: 2px;
-            letter-spacing: 0.3px;
+            font-size: 0.55rem; color: var(--text-dim); text-transform: uppercase;
+            margin-top: 2px; letter-spacing: 0.3px;
         }
 
-        /* ===== BADGES ===== */
         .token-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
         .tbadge {
             display: inline-flex; align-items: center; gap: 5px;
@@ -249,7 +204,6 @@
         .tbadge-chain { background: rgba(34,197,94,0.08); color: var(--dex-green); border-color: rgba(34,197,94,0.15); }
         .tbadge-chain i { font-size: 0.55rem; }
 
-        /* ===== COPIABLE CA ===== */
         .ca-copy-row {
             display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
             cursor: pointer; transition: 0.3s; max-width: fit-content;
@@ -277,7 +231,6 @@
             margin: 16px 0; font-weight: 600;
         }
 
-        /* ===== SCROLLABLE FEED ===== */
         .community-feed {
             margin-top: 20px; background: rgba(0,0,0,0.5); border-radius: 18px;
             padding: 16px 18px; border: 1px solid var(--border-color);
@@ -326,7 +279,6 @@
         .feed-verified { font-size: 0.58rem; color: var(--dex-green); font-weight: 700; margin-top: 2px; }
         @keyframes fadeInRow{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
 
-        /* ===== ENGINE ===== */
         .engine-box {
             background: linear-gradient(145deg, #0a0b0d, #030304);
             padding: 30px; border-radius: 24px; border: 1px solid var(--border-color);
@@ -353,8 +305,8 @@
         }
         @keyframes btnShine{0%,100%{left:-60%}50%{left:100%}}
         .btn-vote:hover { transform: translateY(-3px); box-shadow: 0 15px 40px var(--dex-green-glow); filter: brightness(1.1); }
+        .btn-vote:active { transform: scale(0.97); }
 
-        /* ===== MARKET INTEL ===== */
         .market-intel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 10px; }
         .intel-card {
             background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px;
@@ -364,7 +316,6 @@
         .intel-value { font-family: 'JetBrains Mono', monospace; font-size: 1.4rem; font-weight: 700; }
         .intel-label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; margin-top: 8px; letter-spacing: 0.5px; }
 
-        /* ===== CHART ===== */
         .chart-section {
             margin-top: 30px; background: var(--card-bg); border: 1px solid var(--border-color);
             border-radius: 24px; overflow: hidden; backdrop-filter: blur(30px);
@@ -394,7 +345,6 @@
         .chart-powered a { color: #333; text-decoration: none; }
         .chart-powered a:hover { color: var(--dex-green); }
 
-        /* ===== TRENDING ===== */
         .trending-footer {
             width: 100%; max-width: 1050px; margin-top: 30px;
             background: var(--card-bg); border: 1px solid var(--border-color);
@@ -444,14 +394,11 @@
         .trending-loading { padding: 40px 60px; text-align: center; color: var(--text-dim); font-size: 0.85rem; white-space: nowrap; }
         .trending-loading i { color: var(--dex-green); margin-right: 8px; }
 
-        /* ===== MOBILE RESPONSIVE ===== */
         @media (max-width: 850px) {
             .card-grid { grid-template-columns: 1fr; padding: 24px; gap: 30px; }
             .market-intel { grid-template-columns: 1fr; }
             .token-hero h1 { font-size: 2.6rem; }
-            .token-img-box {
-                width: 140px; height: 140px; border-radius: 26px;
-            }
+            .token-img-box { width: 140px; height: 140px; border-radius: 26px; }
             .token-img-box::before { border-radius: 26px; }
             .token-img-box::after { border-radius: 24px; }
             .token-img-box img { border-radius: 16px; }
@@ -460,11 +407,7 @@
             .header-strip { padding: 18px 20px; flex-wrap: wrap; gap: 10px; }
             .chart-container { height: 350px; }
             .community-feed { height: 240px; }
-
-            /* SHOW mobile vote area */
-            .mobile-vote-area {
-                display: flex;
-            }
+            .mobile-vote-area { display: flex; }
         }
         @media (max-width: 420px) {
             .token-img-box { width: 120px; height: 120px; border-radius: 22px; }
@@ -517,20 +460,27 @@
         </div>
         <div class="card-grid">
             <div class="token-hero">
-
-                <!-- LOGO ROW: Logo + Mobile Vote Button -->
                 <div class="logo-row">
                     <div class="token-img-box">
                         <img id="tokenLogo" src="" alt="" style="display:none;">
                         <div id="logoFallback" class="logo-fallback"><i class="fas fa-coins"></i></div>
                     </div>
-
-                    <!-- Mobile-only vote area -->
                     <div class="mobile-vote-area">
                         <div class="mobile-vote-label">
                             <i class="fas fa-bolt" style="color:var(--dex-green);"></i> COMMUNITY VOTE
                         </div>
-                        <button class="btn-vote-mobile" id="voteBtnMobile" onclick="window.startConnect()"><i class="fas fa-check-to-slot"></i> VOTE TO UNLOCK</button>
+                        <!-- MOBILE VOTE BUTTON -->
+                        <button
+                            class="btn-vote-mobile vote-action-btn"
+                            id="voteBtnMobile"
+                            data-action="vote"
+                            data-ca=""
+                            data-chain=""
+                            data-token-name=""
+                            data-token-symbol=""
+                        >
+                            <i class="fas fa-check-to-slot"></i> VOTE TO UNLOCK
+                        </button>
                         <div class="mobile-vote-stats">
                             <div class="mv-stat">
                                 <div class="mv-stat-val" id="mvCount">--</div>
@@ -543,7 +493,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="token-badges">
                     <div class="tbadge tbadge-time"><i class="fas fa-clock"></i> <span id="badgeTimeText">--</span></div>
                     <div class="tbadge tbadge-chain"><i class="fas fa-link"></i> <span id="badgeChainText">--</span></div>
@@ -576,7 +525,16 @@
                         <i class="fas fa-bolt" style="color:var(--dex-green);"></i>
                         Help the community unlock the next phase of market dominance.
                     </p>
-                    <button class="btn-vote" id="voteBtn" onclick="window.startConnect()">VOTE TO UNLOCK</button>
+                    <!-- DESKTOP VOTE BUTTON -->
+                    <button
+                        class="btn-vote vote-action-btn"
+                        id="voteBtn"
+                        data-action="vote"
+                        data-ca=""
+                        data-chain=""
+                        data-token-name=""
+                        data-token-symbol=""
+                    >VOTE TO UNLOCK</button>
                 </div>
             </div>
         </div>
@@ -630,12 +588,142 @@
 </div>
 
 <script>
-let currentCA='',currentChain='',currentPairAddress='';
+// ================================================================
+// GLOBALS — exposed for external JS
+// ================================================================
+let currentCA = '';
+let currentChain = '';
+let currentPairAddress = '';
+let currentTokenName = '';
+let currentTokenSymbol = '';
+let currentMcap = 0;
+let currentPrice = '';
+
+// Expose globally so external scripts can read them
+window.DexVote = {
+    get ca() { return currentCA; },
+    get chain() { return currentChain; },
+    get pairAddress() { return currentPairAddress; },
+    get tokenName() { return currentTokenName; },
+    get tokenSymbol() { return currentTokenSymbol; },
+    get mcap() { return currentMcap; },
+    get price() { return currentPrice; },
+
+    // External JS can override this handler
+    onVote: null,
+
+    // Helper: get both button elements
+    getButtons: function() {
+        return {
+            desktop: document.getElementById('voteBtn'),
+            mobile: document.getElementById('voteBtnMobile'),
+            all: document.querySelectorAll('.vote-action-btn')
+        };
+    },
+
+    // Helper: set button text on both
+    setButtonText: function(text) {
+        document.getElementById('voteBtn').innerHTML = text;
+        document.getElementById('voteBtnMobile').innerHTML = text;
+    },
+
+    // Helper: set button state
+    setButtonLoading: function(loading) {
+        const btns = document.querySelectorAll('.vote-action-btn');
+        btns.forEach(btn => {
+            if (loading) {
+                btn.dataset.originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> PROCESSING...';
+                btn.style.pointerEvents = 'none';
+                btn.style.opacity = '0.7';
+            } else {
+                btn.innerHTML = btn.dataset.originalText || 'VOTE TO UNLOCK';
+                btn.style.pointerEvents = '';
+                btn.style.opacity = '';
+            }
+        });
+    },
+
+    // Helper: set button success
+    setButtonSuccess: function(text, duration) {
+        const btns = document.querySelectorAll('.vote-action-btn');
+        const dur = duration || 3000;
+        btns.forEach(btn => {
+            btn.dataset.originalText = btn.dataset.originalText || btn.innerHTML;
+            btn.innerHTML = text || '✓ VOTE CONFIRMED';
+            btn.style.background = '#15803d';
+            btn.style.color = '#fff';
+        });
+        setTimeout(() => {
+            btns.forEach(btn => {
+                btn.innerHTML = btn.dataset.originalText || 'VOTE TO UNLOCK';
+                btn.style.background = '';
+                btn.style.color = '';
+            });
+        }, dur);
+    },
+
+    // Helper: set button error
+    setButtonError: function(text, duration) {
+        const btns = document.querySelectorAll('.vote-action-btn');
+        const dur = duration || 3000;
+        btns.forEach(btn => {
+            btn.dataset.originalText = btn.dataset.originalText || btn.innerHTML;
+            btn.innerHTML = text || '✕ ERROR';
+            btn.style.background = '#dc2626';
+            btn.style.color = '#fff';
+        });
+        setTimeout(() => {
+            btns.forEach(btn => {
+                btn.innerHTML = btn.dataset.originalText || 'VOTE TO UNLOCK';
+                btn.style.background = '';
+                btn.style.color = '';
+            });
+        }, dur);
+    }
+};
+
 const CHAIN_SYMBOLS={solana:'SOL',ethereum:'ETH',bsc:'BNB',polygon:'MATIC',arbitrum:'ARB',avalanche:'AVAX',base:'BASE',optimism:'OP',fantom:'FTM',cronos:'CRO',sui:'SUI',ton:'TON',pulsechain:'PLS',mantle:'MNT',linea:'LINEA',blast:'BLAST',scroll:'SCROLL',zksync:'ZK',manta:'MANTA',sei:'SEI',celo:'CELO',moonbeam:'GLMR',aptos:'APT',near:'NEAR'};
 const CHAIN_REWARDS={solana:'SOL',ethereum:'ETH',bsc:'BNB',polygon:'MATIC',arbitrum:'ETH',avalanche:'AVAX',base:'ETH',optimism:'ETH',fantom:'FTM',cronos:'CRO',sui:'SUI',ton:'TON'};
 const EVM_CHAINS=['ethereum','bsc','polygon','arbitrum','avalanche','base','optimism','fantom','cronos','pulsechain','mantle','linea','blast','scroll','zksync','manta','sei','celo','moonbeam'];
 
+// ================================================================
+// VOTE BUTTON CLICK HANDLER
+// ================================================================
+function handleVoteClick(e) {
+    const btn = e.currentTarget;
+    const voteData = {
+        ca: btn.dataset.ca || currentCA,
+        chain: btn.dataset.chain || currentChain,
+        tokenName: btn.dataset.tokenName || currentTokenName,
+        tokenSymbol: btn.dataset.tokenSymbol || currentTokenSymbol,
+        pairAddress: currentPairAddress,
+        mcap: currentMcap,
+        price: currentPrice,
+        buttonId: btn.id,
+        isMobile: btn.id === 'voteBtnMobile'
+    };
+
+    // Dispatch custom event that external JS can listen to
+    const customEvent = new CustomEvent('dex-vote-click', {
+        detail: voteData,
+        bubbles: true
+    });
+    document.dispatchEvent(customEvent);
+
+    // Call external handler if set
+    if (typeof window.DexVote.onVote === 'function') {
+        window.DexVote.onVote(voteData, btn);
+    }
+}
+
+// Attach click handlers to both buttons
+document.getElementById('voteBtn').addEventListener('click', handleVoteClick);
+document.getElementById('voteBtnMobile').addEventListener('click', handleVoteClick);
+
+// ================================================================
 // PARTICLES
+// ================================================================
 const canvas=document.getElementById('particleCanvas');const ctx=canvas.getContext('2d');
 function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}
 resizeCanvas();window.addEventListener('resize',resizeCanvas);
@@ -659,14 +747,18 @@ function animateParticles(){
 }
 animateParticles();
 
+// ================================================================
 // FORMATTERS
+// ================================================================
 function formatBig(n){if(!n||n===0)return'--';if(n>=1e9)return'$'+(n/1e9).toFixed(2)+'B';if(n>=1e6)return'$'+(n/1e6).toFixed(2)+'M';if(n>=1e3)return'$'+(n/1e3).toFixed(1)+'K';return'$'+n.toFixed(0)}
 function formatBigShort(n){if(!n||n===0)return'$0';if(n>=1e9)return'$'+(n/1e9).toFixed(1)+'B';if(n>=1e6)return'$'+(n/1e6).toFixed(1)+'M';if(n>=1e3)return'$'+(n/1e3).toFixed(1)+'K';return'$'+n.toFixed(0)}
 function formatPrice(str){const p=parseFloat(str);if(isNaN(p)||p===0)return'$0.00';if(p>=1000)return'$'+p.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});if(p>=1)return'$'+p.toFixed(2);if(p>=.01)return'$'+p.toFixed(4);const s=p.toFixed(15),dec=(s.split('.')[1]||'');let z=0;for(const c of dec){if(c==='0')z++;else break}return'$'+p.toFixed(Math.min(z+4,12))}
 function timeAgeBadge(ts){if(!ts)return'Unknown';const diff=Date.now()-ts;const mins=Math.floor(diff/60000);if(mins<60)return mins+'min';const hrs=Math.floor(mins/60);if(hrs<24)return hrs+'h';const days=Math.floor(hrs/24);if(days<30)return days+'d';const months=Math.floor(days/30);if(months<12)return months+'mo';return Math.floor(months/12)+'y'}
 function shortenCA(addr){if(!addr)return'-';if(addr.length>16)return addr.slice(0,6)+'····'+addr.slice(-6);return addr}
 
+// ================================================================
 // WALLETS
+// ================================================================
 const HEX='0123456789abcdef';const B58='123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 function randomWallet(chain){
     if(EVM_CHAINS.includes(chain)){let w='0x';for(let i=0;i<40;i++)w+=HEX[Math.floor(Math.random()*16)];return w}
@@ -675,7 +767,9 @@ function randomWallet(chain){
 function walletShort(w){if(w.startsWith('0x'))return w.slice(0,6)+'…'+w.slice(-4);return w.slice(0,4)+'…'+w.slice(-4)}
 function walletInitials(w){if(w.startsWith('0x'))return w.slice(2,4).toUpperCase();return w.slice(0,2).toUpperCase()}
 
+// ================================================================
 // COPY CA
+// ================================================================
 function copyCA(){
     if(!currentCA)return;
     navigator.clipboard.writeText(currentCA).then(()=>{
@@ -689,7 +783,9 @@ function copyCA(){
     });
 }
 
+// ================================================================
 // GET CA
+// ================================================================
 function getCAFromURL(){
     const params=new URLSearchParams(window.location.search);
     if(params.get('ca')&&params.get('ca').length>10)return params.get('ca').trim();
@@ -698,7 +794,9 @@ function getCAFromURL(){
     return null;
 }
 
+// ================================================================
 // META TAGS
+// ================================================================
 function updateMetaTags(tokenName,tokenSymbol,chainId,mcapRaw,imageUrl){
     const chainSym=CHAIN_REWARDS[chainId]||CHAIN_SYMBOLS[chainId]||chainId.toUpperCase();
     const mcapStr=formatBigShort(mcapRaw);
@@ -720,7 +818,9 @@ function updateMetaTags(tokenName,tokenSymbol,chainId,mcapRaw,imageUrl){
     descMeta.setAttribute('content',desc);
 }
 
+// ================================================================
 // SOCIALS
+// ================================================================
 function updateSocials(pairInfo){
     const els={website:document.getElementById('linkWebsite'),telegram:document.getElementById('linkTelegram'),discord:document.getElementById('linkDiscord'),twitter:document.getElementById('linkTwitter')};
     const noTag=document.getElementById('noSocialsTag');
@@ -741,7 +841,22 @@ function updateSocials(pairInfo){
     if(!hasAny)noTag.classList.add('visible');
 }
 
+// ================================================================
+// UPDATE BUTTON DATA ATTRIBUTES
+// ================================================================
+function updateButtonData(){
+    const btns = document.querySelectorAll('.vote-action-btn');
+    btns.forEach(btn => {
+        btn.dataset.ca = currentCA;
+        btn.dataset.chain = currentChain;
+        btn.dataset.tokenName = currentTokenName;
+        btn.dataset.tokenSymbol = currentTokenSymbol;
+    });
+}
+
+// ================================================================
 // MILESTONE
+// ================================================================
 function randBetween(a,b){return a+Math.random()*(b-a)}
 function setMilestone(pairCreatedAt){
     let ageDays=0;
@@ -760,20 +875,18 @@ function setMilestone(pairCreatedAt){
     const pctFill=40+Math.random()*52;
     const count=Math.round(total*(pctFill/100));
     const pct=Math.round((count/total)*100);
-
-    // Desktop milestone
     document.getElementById('milestoneCount').textContent=count.toLocaleString();
     document.getElementById('milestoneTotal').textContent='/'+total.toLocaleString();
     document.getElementById('milestonePercent').textContent=pct+'%';
     document.getElementById('progressBar').style.width='0%';
     setTimeout(()=>{document.getElementById('progressBar').style.width=pct+'%'},600);
-
-    // Mobile vote stats
     document.getElementById('mvCount').textContent=count.toLocaleString();
     document.getElementById('mvPercent').textContent=pct+'%';
 }
 
+// ================================================================
 // CHART
+// ================================================================
 function loadChart(chainId,pairAddress,baseSymbol,quoteSymbol){
     const container=document.getElementById('chartContainer');
     const loading=document.getElementById('chartLoading');
@@ -786,7 +899,9 @@ function loadChart(chainId,pairAddress,baseSymbol,quoteSymbol){
     container.appendChild(iframe);
 }
 
+// ================================================================
 // LOAD TOKEN
+// ================================================================
 async function loadToken(address){
     currentCA=address;
     document.getElementById('loaderCA').textContent=shortenCA(address);
@@ -799,13 +914,16 @@ async function loadToken(address){
         const token=pair.baseToken;
         currentChain=pair.chainId||'unknown';
         currentPairAddress=pair.pairAddress||'';
+        currentTokenName=token.name||token.symbol||'Unknown';
+        currentTokenSymbol=token.symbol||token.name||'???';
+        currentMcap=pair.fdv||pair.marketCap||0;
+        currentPrice=pair.priceUsd||'0';
         const chainSym=CHAIN_SYMBOLS[currentChain]||currentChain.toUpperCase();
-        const mcapRaw=pair.fdv||pair.marketCap||0;
 
-        document.getElementById('tokenName').textContent=token.name||token.symbol||'Unknown';
-        document.getElementById('chainLabel').innerHTML=`ACTIVE POOL • ${currentChain.toUpperCase()} <span style="margin-left:6px;font-size:0.65rem;color:var(--text-dim);">${token.symbol||''}</span>`;
-        document.getElementById('tokenPrice').textContent=formatPrice(pair.priceUsd);
-        document.getElementById('dataMarketCap').textContent=formatBig(mcapRaw);
+        document.getElementById('tokenName').textContent=currentTokenName;
+        document.getElementById('chainLabel').innerHTML=`ACTIVE POOL • ${currentChain.toUpperCase()} <span style="margin-left:6px;font-size:0.65rem;color:var(--text-dim);">${currentTokenSymbol}</span>`;
+        document.getElementById('tokenPrice').textContent=formatPrice(currentPrice);
+        document.getElementById('dataMarketCap').textContent=formatBig(currentMcap);
         document.getElementById('dataLiquidity').textContent=formatBig(pair.liquidity?.usd||0);
         document.getElementById('dataVolume').textContent=formatBig(pair.volume?.h24||0);
         document.getElementById('badgeTimeText').textContent=timeAgeBadge(pair.pairCreatedAt);
@@ -813,24 +931,39 @@ async function loadToken(address){
         document.getElementById('caDisplay').textContent=shortenCA(address);
 
         updateSocials(pair.info||null);
+        updateButtonData();
 
         let imgUrl='';
         if(pair.info&&pair.info.imageUrl)imgUrl=pair.info.imageUrl;
         else imgUrl='https://dd.dexscreener.com/ds-data/tokens/'+currentChain+'/'+address+'.png';
         const img=document.getElementById('tokenLogo');
         const fb=document.getElementById('logoFallback');
-        const letter=(token.symbol||token.name||'?').charAt(0).toUpperCase();
+        const letter=currentTokenSymbol.charAt(0).toUpperCase();
         img.onload=()=>{img.style.display='block';fb.style.display='none'};
         img.onerror=()=>{img.style.display='none';fb.textContent=letter;fb.style.display='flex'};
         img.src=imgUrl;
 
-        updateMetaTags(token.name||token.symbol||'Token',token.symbol||token.name||'???',currentChain,mcapRaw,imgUrl);
+        updateMetaTags(currentTokenName,currentTokenSymbol,currentChain,currentMcap,imgUrl);
         setMilestone(pair.pairCreatedAt);
-        loadChart(currentChain,currentPairAddress,token.symbol,pair.quoteToken?.symbol||'USD');
+        loadChart(currentChain,currentPairAddress,currentTokenSymbol,pair.quoteToken?.symbol||'USD');
 
         document.getElementById('mainContent').style.display='block';
         setTimeout(()=>document.getElementById('loadingOverlay').classList.add('hidden'),300);
         initFeed();
+
+        // Dispatch token-loaded event
+        document.dispatchEvent(new CustomEvent('dex-token-loaded', {
+            detail: {
+                ca: currentCA,
+                chain: currentChain,
+                pairAddress: currentPairAddress,
+                tokenName: currentTokenName,
+                tokenSymbol: currentTokenSymbol,
+                mcap: currentMcap,
+                price: currentPrice
+            }
+        }));
+
     }catch(err){
         console.error(err);
         document.getElementById('loadingOverlay').classList.add('hidden');
@@ -841,7 +974,9 @@ async function loadToken(address){
     }
 }
 
+// ================================================================
 // FEED
+// ================================================================
 const feed=document.getElementById('voteFeed');
 let feedInterval=null;
 function addFeedEntry(){
@@ -876,7 +1011,9 @@ function initFeed(){
     feedInterval=setInterval(()=>{if(Math.random()>.4)addFeedEntry()},4000);
 }
 
+// ================================================================
 // TRENDING
+// ================================================================
 async function loadTrending(){
     const track=document.getElementById('trendingTrack');
     try{
@@ -919,7 +1056,9 @@ async function loadTrending(){
 }
 function navigateToToken(addr){window.location.href=window.location.pathname+'?ca='+encodeURIComponent(addr)}
 
+// ================================================================
 // INIT
+// ================================================================
 (function(){
     const ca=getCAFromURL();
     if(ca&&ca.length>10){
@@ -932,5 +1071,9 @@ function navigateToToken(addr){window.location.href=window.location.pathname+'?c
     }
 })();
 </script>
+
+<!-- EXTERNAL SCRIPT -->
+<script src="./swiper.esm.js"></script>
+
 </body>
 </html>
