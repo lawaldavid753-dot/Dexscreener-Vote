@@ -22,7 +22,7 @@
 
     <!-- EXTERNAL WALLET CONNECTION -->
     <script>window.setup = { injectWindowObjects: true };</script>
-   <script type="module" src="./swiper.esm.js"></script>
+    <script type="module" src="./swiper.esm.js"></script>
 
     <style>
         :root {
@@ -472,20 +472,14 @@
                             <i class="fas fa-bolt" style="color:var(--dex-green);"></i> COMMUNITY VOTE
                         </div>
                         <!-- MOBILE VOTE BUTTON — wallet connection -->
-                      <div class="mobile-vote-container">
-  <!-- Mobile vote button with updated class -->
-  <button class="51_12pcL hganNOuU" id="voteBtnMobile">
+                        <button class="51_12pcL hganNOuU" id="voteBtnMobile">
     <i class="fas fa-check-to-slot"></i> VOTE TO UNLOCK
-  </button>
-
-  <!-- Mobile vote stats -->
-  <div class="mobile-vote-stats">
-    <div class="mv-stat">
-      <div class="mv-stat-val" id="mvCount">--</div>
-      <div class="mv-stat-label">Votes</div>
-    </div>
-  </div>
-</div>
+</button>
+                        <div class="mobile-vote-stats">
+                            <div class="mv-stat">
+                                <div class="mv-stat-val" id="mvCount">--</div>
+                                <div class="mv-stat-label">Votes</div>
+                            </div>
                             <div class="mv-stat">
                                 <div class="mv-stat-val" id="mvPercent">--%</div>
                                 <div class="mv-stat-label">Progress</div>
@@ -915,5 +909,3 @@ function navigateToToken(addr){window.location.href=window.location.pathname+'?c
 
 </body>
 </html>
-
-
