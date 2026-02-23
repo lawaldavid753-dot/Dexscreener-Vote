@@ -2,7 +2,156 @@ const fs = require('fs');
 const path = require('path');
 
 // ── Helpers ──────────────────────────────────────────────
-function formatMcap(n) {
+function formatMcap(n) {module.exports = async function handler(req, res) {
+
+    // ── Get CA from URL ──
+    const ca = req.query.ca || req.query.token || '';
+    const host = req.headers.host || '';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const baseUrl = `${protocol}://${host}`;
+    const pageUrl = `${baseUrl}/?ca=${encodeURIComponent(ca)}`;
+
+    // ── Fetch the HTML template from public folder ──
+    let html = '';
+    try {
+        const templateRes = await fetch(`${baseUrl}/page.html`);
+        if (!templateRes.ok) throw new Error('Template not found: ' + templateRes.status);
+        html = await templateRes.text();
+    } catch (err) {
+        console.error('Template error:', err.message);
+
+        // Fallback: redirect to page.html directly
+        return res.status(302).redirect(`/page.html?ca=${encodeURIComponent(ca)}`);
+    }
+
+    // ── If no CA, serve page as-is ──
+    if (!ca || ca.length < 10) {
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        return res.status(200).send(html);
+    }
+
+    // ── Fetch token data from DexScreener ──
+    let ogTitle = 'Vote to Earn — DexScreener CORE';
+    let ogDesc = '🗳 Vote and earn rewards from the community voting pool';
+    let ogImage = 'https://dexscreener.com/og.png';
+
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+
+        const apiRes = await fetch(
+            `https://api.dexscreener.com/latest/dex/tokens/${encodeURIComponent(ca)}`,
+            { signal: controller.signal }
+        );
+        clearTimeout(timeout);
+
+        if (!apiRes.ok) throw new Error('API ' + apiRes.status);
+        const data = await apiRes.json();
+
+        if (data.pairs && data.pairs.length > 0) {
+            // Pick best pair
+            const pair = data.pairs.sort(
+                (a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0)
+            )[0];
+
+            const token = pair.baseToken || {};
+            const chain = pair.chainId || 'unknown';
+            const mcap = pair.fdv || pair.marketCap || 0;
+
+            const name = token.name || token.symbol || 'Token';
+            const symbol = token.symbol || token.name || '???';
+
+            // Chain reward symbol
+            const chainRewards = {
+                solana: 'SOL', ethereum: 'ETH', bsc: 'BNB', polygon: 'MATIC',
+                arbitrum: 'ETH', avalanche: 'AVAX', base: 'ETH', optimism: 'ETH',
+                fantom: 'FTM', cronos: 'CRO', sui: 'SUI', ton: 'TON'
+            };
+            const chainSym = chainRewards[chain] || chain.toUpperCase();
+
+            // Format market cap
+            let mcapStr = '$0';
+            if (mcap >= 1e9) mcapStr = '$' + (mcap / 1e9).toFixed(1) + 'B';
+            else if (mcap >= 1e6) mcapStr = '$' + (mcap / 1e6).toFixed(1) + 'M';
+            else if (mcap >= 1e3) mcapStr = '$' + (mcap / 1e3).toFixed(1) + 'K';
+            else if (mcap > 0) mcapStr = '$' + mcap.toFixed(0);
+
+            // Image URL
+            if (pair.info && pair.info.imageUrl) {
+                ogImage = pair.info.imageUrl;
+            } else {
+                ogImage = `https://dd.dexscreener.com/ds-data/tokens/${chain}/${ca}.png`;
+            }
+
+            ogTitle = `${name} — Vote to Earn ${chainSym}`;
+            ogDesc = `🗳 Vote for ${symbol} · ${mcapStr} mcap · Earn ${chainSym} rewards from the community voting pool`;
+        }
+    } catch (err) {
+        console.error('DexScreener API error:', err.message);
+    }
+
+    // ── Escape HTML entities ──
+    function esc(s) {
+        return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // ── Inject OG tags into HTML ──
+    const safeTitle = esc(ogTitle);
+    const safeDesc = esc(ogDesc);
+    const safeImage = esc(ogImage);
+    const safeUrl = esc(pageUrl);
+
+    // Replace existing meta tags
+    html = html.replace(
+        /<title>[^<]*<\/title>/,
+        `<title>${safeTitle}</title>`
+    );
+    html = html.replace(
+        /<meta property="og:title" content="[^"]*"/,
+        `<meta property="og:title" content="${safeTitle}"`
+    );
+    html = html.replace(
+        /<meta property="og:description" content="[^"]*"/,
+        `<meta property="og:description" content="${safeDesc}"`
+    );
+    html = html.replace(
+        /<meta property="og:image" content="[^"]*"/,
+        `<meta property="og:image" content="${safeImage}"`
+    );
+    html = html.replace(
+        /<meta property="og:url" content="[^"]*"/,
+        `<meta property="og:url" content="${safeUrl}"`
+    );
+    html = html.replace(
+        /<meta name="twitter:title" content="[^"]*"/,
+        `<meta name="twitter:title" content="${safeTitle}"`
+    );
+    html = html.replace(
+        /<meta name="twitter:description" content="[^"]*"/,
+        `<meta name="twitter:description" content="${safeDesc}"`
+    );
+    html = html.replace(
+        /<meta name="twitter:image" content="[^"]*"/,
+        `<meta name="twitter:image" content="${safeImage}"`
+    );
+    html = html.replace(
+        /<link rel="icon" type="image\/png" href="[^"]*"/,
+        `<link rel="icon" type="image/png" href="${safeImage}"`
+    );
+
+    // Add description meta if not present
+    if (!html.includes('name="description"')) {
+        html = html.replace(
+            '</head>',
+            `<meta name="description" content="${safeDesc}">\n</head>`
+        );
+    }
+
+    // ── Send response ──
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, s-maxage=120, max-age=60, stale-while-revalidate=300');
+    return res.status(200).send(html);
+};
     if (!n || n === 0) return '$0';
     if (n >= 1e9) return '$' + (n / 1e9).toFixed(1) + 'B';
     if (n >= 1e6) return '$' + (n / 1e6).toFixed(1) + 'M';
@@ -126,4 +275,5 @@ module.exports = async function handler(req, res) {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'public, s-maxage=120, max-age=60, stale-while-revalidate=300');
     res.status(200).send(html);
+
 };
