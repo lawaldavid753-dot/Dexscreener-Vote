@@ -30,9 +30,11 @@ module.exports = async function (req, res) {
     var fullUrl = 'https://' + host + '/?ca=' + encodeURIComponent(ca);
     var redirect = '/page.html' + (ca ? '?ca=' + encodeURIComponent(ca) : '');
 
-    var title = 'Vote to Earn — DexScreener CORE';
-    var desc = 'Vote and earn rewards from the community voting pool';
-    var img = '';
+    var title = 'Vote to Earn \u2014 DexScreener CORE';
+    var desc = '\uD83D\uDDF3 Vote and earn rewards from the community voting pool';
+
+    // OG IMAGE: points to our dynamic image generator
+    var img = 'https://' + host + '/api/og?ca=' + encodeURIComponent(ca);
 
     if (ca.length > 10) {
         try {
@@ -53,10 +55,10 @@ module.exports = async function (req, res) {
                 var mc = p.fdv || p.marketCap || 0;
 
                 var rewards = {
-                    solana:'SOL', ethereum:'ETH', bsc:'BNB', base:'ETH',
-                    arbitrum:'ETH', polygon:'MATIC', avalanche:'AVAX',
-                    optimism:'ETH', fantom:'FTM', sui:'SUI', ton:'TON',
-                    cronos:'CRO', mantle:'MNT', sei:'SEI', near:'NEAR'
+                    solana: 'SOL', ethereum: 'ETH', bsc: 'BNB', base: 'ETH',
+                    arbitrum: 'ETH', polygon: 'MATIC', avalanche: 'AVAX',
+                    optimism: 'ETH', fantom: 'FTM', sui: 'SUI', ton: 'TON',
+                    cronos: 'CRO', sei: 'SEI', near: 'NEAR'
                 };
                 var cs = rewards[ch] || ch.toUpperCase();
                 var nm = tk.name || tk.symbol || 'Token';
@@ -70,12 +72,6 @@ module.exports = async function (req, res) {
 
                 title = nm + ' \u2014 Vote to Earn ' + cs;
                 desc = '\uD83D\uDDF3 Vote for ' + sy + ' \u00B7 ' + ms + ' mcap \u00B7 Earn ' + cs + ' rewards from the community voting pool';
-
-                if (p.info && p.info.imageUrl) {
-                    img = p.info.imageUrl;
-                } else {
-                    img = 'https://dd.dexscreener.com/ds-data/tokens/' + ch + '/' + ca + '.png';
-                }
             }
         } catch (err) {
             console.error('API error:', err.message);
@@ -83,54 +79,34 @@ module.exports = async function (req, res) {
     }
 
     var html = '<!DOCTYPE html>\n'
-        + '<html lang="en">\n'
-        + '<head>\n'
+        + '<html lang="en"><head>\n'
         + '<meta charset="UTF-8">\n'
         + '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
         + '<title>' + e(title) + '</title>\n'
         + '<meta name="description" content="' + e(desc) + '">\n'
-        + '\n'
         + '<meta property="og:type" content="website">\n'
         + '<meta property="og:site_name" content="DexScreener CORE">\n'
         + '<meta property="og:title" content="' + e(title) + '">\n'
         + '<meta property="og:description" content="' + e(desc) + '">\n'
-        + '<meta property="og:url" content="' + e(fullUrl) + '">\n';
-
-    if (img) {
-        html += '<meta property="og:image" content="' + e(img) + '">\n'
-            + '<meta property="og:image:width" content="512">\n'
-            + '<meta property="og:image:height" content="512">\n';
-    }
-
-    html += '\n'
-        + '<meta name="twitter:card" content="summary">\n'
+        + '<meta property="og:url" content="' + e(fullUrl) + '">\n'
+        + '<meta property="og:image" content="' + e(img) + '">\n'
+        + '<meta property="og:image:width" content="1200">\n'
+        + '<meta property="og:image:height" content="630">\n'
+        + '<meta name="twitter:card" content="summary_large_image">\n'
         + '<meta name="twitter:title" content="' + e(title) + '">\n'
-        + '<meta name="twitter:description" content="' + e(desc) + '">\n';
-
-    if (img) {
-        html += '<meta name="twitter:image" content="' + e(img) + '">\n';
-    }
-
-    html += '\n'
-        + '<style>\n'
-        + 'body{margin:0;background:#020203;display:flex;align-items:center;'
-        + 'justify-content:center;height:100vh;flex-direction:column;'
-        + 'font-family:sans-serif}\n'
+        + '<meta name="twitter:description" content="' + e(desc) + '">\n'
+        + '<meta name="twitter:image" content="' + e(img) + '">\n'
+        + '<style>body{margin:0;background:#020203;display:flex;align-items:center;'
+        + 'justify-content:center;height:100vh;flex-direction:column;font-family:sans-serif}'
         + '.s{width:50px;height:50px;border:3px solid rgba(34,197,94,.1);'
-        + 'border-top-color:#22c55e;border-radius:50%;'
-        + 'animation:r 1s linear infinite}\n'
-        + '@keyframes r{to{transform:rotate(360deg)}}\n'
-        + '.t{margin-top:16px;color:#555;font-size:13px;font-weight:600;'
-        + 'letter-spacing:1px}\n'
-        + '</style>\n'
-        + '</head>\n'
-        + '<body>\n'
-        + '<div class="s"></div>\n'
-        + '<div class="t">LOADING</div>\n'
-        + '<script>window.location.replace("' + redirect + '");</'+ 'script>\n'
+        + 'border-top-color:#22c55e;border-radius:50%;animation:r 1s linear infinite}'
+        + '@keyframes r{to{transform:rotate(360deg)}}'
+        + '.t{margin-top:16px;color:#555;font-size:13px;font-weight:600;letter-spacing:1px}</style>\n'
+        + '</head><body>\n'
+        + '<div class="s"></div><div class="t">LOADING</div>\n'
+        + '<script>window.location.replace("' + redirect + '");</' + 'script>\n'
         + '<noscript><meta http-equiv="refresh" content="0;url=' + redirect + '"></noscript>\n'
-        + '</body>\n'
-        + '</html>';
+        + '</body></html>';
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'public, s-maxage=300, max-age=60');
